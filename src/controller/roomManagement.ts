@@ -1,6 +1,5 @@
-import { WebSocket } from 'ws';
 import { Player, Room } from '../types';
-import { players, rooms } from '../db';
+import { players, rooms, games } from '../db';
 import { sendResponse } from '../utils';
 
 export function createRoom(wsId: string) {
@@ -18,9 +17,9 @@ export function addUserToRoom(data: { indexRoom: string }, wsId: string) {
   const player = players.values().find((p) => p.wsId === wsId);
 
   const { indexRoom } = data;
-  if (!player || !rooms.has(indexRoom)) return;
+  const room = rooms.get(indexRoom);
 
-  const room = rooms.get(indexRoom)!;
+  if (!player || !room || room.players.find((p) => p.index === player.index)) return;
 
   if (room.players.length < 2) {
     room.players.push(player);
@@ -35,6 +34,12 @@ export function addUserToRoom(data: { indexRoom: string }, wsId: string) {
     });
 
     if (room.players.length === 2) {
+      games.set(room.gameId, {
+        id: room.gameId,
+        boards: [],
+        players: [...room.players],
+        currentPlayerIndex: 0,
+      });
       rooms.delete(indexRoom);
     }
     updateRooms(rooms, players);

@@ -9,7 +9,6 @@ export function registerPlayer(
   wsId: string,
 ) {
   const { name, password } = data;
-  console.log('Registering player:', name, password, data);
 
   if (players.has(name)) {
     const player = players.get(name)!;

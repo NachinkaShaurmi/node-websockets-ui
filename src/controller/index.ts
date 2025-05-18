@@ -1,8 +1,9 @@
 import { WebSocket } from 'ws';
-import { registerPlayer } from './registerPlayer';
-import { Player } from '../types';
+import { registerPlayer } from './playerManagement';
 import { createRoom, updateRooms, addUserToRoom } from './roomManagement';
 import { players, rooms } from '../db';
+import { addShips } from './gameManagement';
+import { handleAttack, handleRandomAttack } from './gameManagement';
 
 interface IWsCommand {
   type: string;
@@ -30,7 +31,19 @@ export default function handleMessage(ws: WebSocket, message: string, wsId: stri
       addUserToRoom(payload, wsId);
       break;
 
+    case 'add_ships':
+      addShips(payload);
+      break;
+
+    case 'attack':
+      handleAttack(payload);
+      break;
+
+    case 'randomAttack':
+      handleRandomAttack(payload);
+      break;
+
     default:
-      console.log('Unknown command:', data.type);
+      console.log('Unknown command:', data?.type);
   }
 }
