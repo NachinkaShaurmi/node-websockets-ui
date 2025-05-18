@@ -1,6 +1,7 @@
 import { sendResponse } from 'utils';
 import { Ship, Board } from '../types';
 import { games, players } from '../db';
+import { botPlay, BOT_NAME } from './singlePlayManagement';
 
 export function addShips(data: { gameId: string; indexPlayer: number; ships: Ship[] }) {
   const { gameId, ships, indexPlayer } = data;
@@ -22,6 +23,10 @@ export function addShips(data: { gameId: string; indexPlayer: number; ships: Shi
       });
       sendResponse(p.ws, { type: 'turn', data: { currentPlayer: game.currentPlayerIndex }, id: 0 });
     });
+
+    if (game.players[game.currentPlayerIndex].name === BOT_NAME) {
+      botPlay(gameId, game.currentPlayerIndex);
+    }
   }
 }
 
@@ -29,12 +34,12 @@ function processShot(
   board: Board,
   x: number,
   y: number,
-): { status: 'miss' | 'shot' | 'killed'; ship?: Ship } {
+): { status: 'miss' | 'shot' | 'killed' | 'blocked'; ship?: Ship } {
   const cellKey = `${x},${y}`;
 
   if (board.shots.has(cellKey)) {
     console.log('Cell already shot:', cellKey);
-    return { status: 'miss' };
+    return { status: 'blocked' };
   }
 
   board.shots.add(cellKey);
@@ -133,6 +138,8 @@ export function handleAttack(data: { gameId: string; indexPlayer: number; x: num
 
   const result = processShot(opponentBoard, x, y);
 
+  if (result.status === 'blocked') return;
+
   game.players.forEach((p) => {
     sendResponse(p.ws, {
       type: 'attack',
@@ -190,6 +197,8 @@ export function handleAttack(data: { gameId: string; indexPlayer: number; x: num
     players.get(winner.name)!.wins += 1;
     updateWinners();
     games.delete(gameId);
+  } else if (game.players[game.currentPlayerIndex].name === BOT_NAME) {
+    setTimeout(() => botPlay(gameId, game.currentPlayerIndex), 500);
   }
 }
 

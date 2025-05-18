@@ -4,6 +4,7 @@ import { createRoom, updateRooms, addUserToRoom } from './roomManagement';
 import { players, rooms } from '../db';
 import { addShips } from './gameManagement';
 import { handleAttack, handleRandomAttack } from './gameManagement';
+import { handleSinglePlay } from './singlePlayManagement';
 
 interface IWsCommand {
   type: string;
@@ -41,6 +42,10 @@ export default function handleMessage(ws: WebSocket, message: string, wsId: stri
 
     case 'randomAttack':
       handleRandomAttack(payload);
+      break;
+
+    case 'single_play':
+      handleSinglePlay(wsId);
       break;
 
     default:

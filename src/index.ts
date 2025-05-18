@@ -42,11 +42,18 @@ process.on('SIGTERM', () => {
 httpServer.listen(HTTP_PORT, () => {
   console.log(`Static http server running on http://localhost:${HTTP_PORT}`);
 
-  try {
-    const start =
-      process.platform === 'win32' ? 'start' : process.platform === 'darwin' ? 'open' : 'xdg-open';
-    // exec(`${start} http://localhost:${HTTP_PORT}`);
-  } catch (error) {
-    console.error('Error opening browser:', error);
+  if (process.env.npm_lifecycle_event === 'start') {
+    try {
+      const start =
+        process.platform === 'win32'
+          ? 'start'
+          : process.platform === 'darwin'
+            ? 'open'
+            : 'xdg-open';
+
+      exec(`${start} http://localhost:${HTTP_PORT}`);
+    } catch (error) {
+      console.error('Error opening browser:', error);
+    }
   }
 });

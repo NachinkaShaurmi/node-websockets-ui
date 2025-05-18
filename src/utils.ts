@@ -7,6 +7,6 @@ interface IPayload {
 }
 
 export function sendResponse(ws: WebSocket, payload: IPayload) {
-  ws.send(JSON.stringify({ ...payload, data: JSON.stringify(payload.data) }));
+  ws.send?.(JSON.stringify({ ...payload, data: JSON.stringify(payload.data) }));
   console.log('Sent:', payload);
 }
